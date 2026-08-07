@@ -30,6 +30,20 @@ npm run db:generate
 
 不要修改已经部署过的历史迁移。
 
+## 邮件通知
+
+每次预约成功保存到数据库后，后端会通过 Resend 把姓名、手机号、公司、职位、预算、方便联系时间和来源信息发送到 `1193254370@qq.com`。数据库中的 `notification_status`、`notification_provider_id`、`notification_error` 和 `notification_sent_at` 字段用于记录投递结果。
+
+本地开发时，复制 `.env.example` 为 `.env.local`，再填写 Resend 的发送密钥。生产环境通过 Sites 的运行时环境变量配置：
+
+```text
+RESEND_API_KEY=发送权限密钥
+LEAD_NOTIFICATION_TO=1193254370@qq.com
+LEAD_NOTIFICATION_FROM=课程报名提醒 <你的已验证发信地址>
+```
+
+建议在 Resend 创建只有发送权限的密钥。`onboarding@resend.dev` 仅适合向 Resend 账号本人的邮箱发送测试邮件；面向其他收件地址时，需要验证自己的发信域名。
+
 ## 部署到 Sites
 
 项目已经包含 `.openai/hosting.json`，通过 Codex 的 Sites 发布流程即可自动创建站点、D1 数据库、应用迁移并部署。

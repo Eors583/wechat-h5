@@ -22,6 +22,10 @@ export const leads = sqliteTable(
     consentAt: text("consent_at").notNull(),
     idempotencyKey: text("idempotency_key").notNull(),
     requestFingerprint: text("request_fingerprint").notNull(),
+    notificationStatus: text("notification_status").notNull().default("pending"),
+    notificationProviderId: text("notification_provider_id").notNull().default(""),
+    notificationError: text("notification_error").notNull().default(""),
+    notificationSentAt: text("notification_sent_at").notNull().default(""),
     createdAt: text("created_at").notNull(),
   },
   (table) => [

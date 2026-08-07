@@ -2,6 +2,10 @@ import { and, count, eq, gte } from "drizzle-orm";
 import { getDb } from "../../../db";
 import { leads } from "../../../db/schema";
 import { siteConfig } from "../../../site.config";
+import {
+  sendLeadNotification,
+  type LeadNotificationInput,
+} from "../../lib/lead-notification";
 
 type LeadPayload = {
   campaignCode?: unknown;
@@ -39,6 +43,26 @@ async function fingerprintRequest(request: Request) {
   const bytes = new TextEncoder().encode(`${day}:${ip}:${userAgent}`);
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function notifyAndTrackLead(db: ReturnType<typeof getDb>, lead: LeadNotificationInput) {
+  const result = await sendLeadNotification(lead);
+
+  try {
+    await db
+      .update(leads)
+      .set({
+        notificationStatus: result.status,
+        notificationProviderId: result.status === "sent" ? result.providerId : "",
+        notificationError: result.status === "sent" ? "" : result.error,
+        notificationSentAt: result.status === "sent" ? new Date().toISOString() : "",
+      })
+      .where(eq(leads.id, lead.id));
+  } catch {
+    console.error(`Unable to persist notification status for lead ${lead.id}`);
+  }
+
+  return result;
 }
 
 export async function POST(request: Request) {
@@ -87,6 +111,19 @@ export async function POST(request: Request) {
   const db = getDb();
 
   try {
+    const [existingLead] = await db
+      .select()
+      .from(leads)
+      .where(eq(leads.idempotencyKey, idempotencyKey))
+      .limit(1);
+
+    if (existingLead) {
+      if (existingLead.notificationStatus !== "sent") {
+        await notifyAndTrackLead(db, existingLead);
+      }
+      return Response.json({ ok: true, duplicate: true });
+    }
+
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
     const [recent] = await db
       .select({ value: count() })
@@ -97,7 +134,7 @@ export async function POST(request: Request) {
       return jsonError("提交次数过多，请稍后再试", 429);
     }
 
-    await db.insert(leads).values({
+    const lead = {
       id: crypto.randomUUID(),
       campaignCode,
       name,
@@ -117,12 +154,27 @@ export async function POST(request: Request) {
       idempotencyKey,
       requestFingerprint: fingerprint,
       createdAt: now.toISOString(),
-    });
+    };
 
-    return Response.json({ ok: true }, { status: 201 });
+    await db.insert(leads).values(lead);
+    const notification = await notifyAndTrackLead(db, lead);
+
+    return Response.json(
+      { ok: true, notificationSent: notification.status === "sent" },
+      { status: 201 },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("idempotency") || message.includes("UNIQUE constraint failed")) {
+      const [existingLead] = await db
+        .select()
+        .from(leads)
+        .where(eq(leads.idempotencyKey, idempotencyKey))
+        .limit(1);
+
+      if (existingLead && existingLead.notificationStatus !== "sent") {
+        await notifyAndTrackLead(db, existingLead);
+      }
       return Response.json({ ok: true, duplicate: true });
     }
     return jsonError("系统暂时无法保存预约，请稍后再试", 503);
