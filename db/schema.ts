@@ -1,0 +1,32 @@
+import { index, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
+
+export const leads = sqliteTable(
+  "leads",
+  {
+    id: text("id").primaryKey(),
+    campaignCode: text("campaign_code").notNull(),
+    name: text("name").notNull(),
+    phone: text("phone").notNull(),
+    company: text("company").notNull().default(""),
+    jobTitle: text("job_title").notNull().default(""),
+    budgetRange: text("budget_range").notNull().default(""),
+    contactTime: text("contact_time").notNull().default(""),
+    status: text("status").notNull().default("new"),
+    utmSource: text("utm_source").notNull().default(""),
+    utmMedium: text("utm_medium").notNull().default(""),
+    utmCampaign: text("utm_campaign").notNull().default(""),
+    utmContent: text("utm_content").notNull().default(""),
+    referrer: text("referrer").notNull().default(""),
+    landingUrl: text("landing_url").notNull().default(""),
+    consentVersion: text("consent_version").notNull(),
+    consentAt: text("consent_at").notNull(),
+    idempotencyKey: text("idempotency_key").notNull(),
+    requestFingerprint: text("request_fingerprint").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_leads_idempotency_key").on(table.idempotencyKey),
+    index("idx_leads_campaign_created_at").on(table.campaignCode, table.createdAt),
+    index("idx_leads_fingerprint_created_at").on(table.requestFingerprint, table.createdAt),
+  ],
+);
