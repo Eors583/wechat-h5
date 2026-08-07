@@ -1,7 +1,7 @@
 export const siteConfig = {
   brand: "知行人才研究院",
   campaignCode: "talent-strategy-workshop-2026",
-  consentVersion: "2026-08-07-email-v1",
+  consentVersion: "2026-08-07-web3forms-v1",
   course: {
     eyebrow: "2026 · 战略人才管理公开课",
     title: "人才战略罗盘",

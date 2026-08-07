@@ -118,7 +118,10 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (existingLead) {
-      if (existingLead.notificationStatus !== "sent") {
+      if (
+        existingLead.notificationStatus === "failed" ||
+        existingLead.notificationStatus === "not_configured"
+      ) {
         await notifyAndTrackLead(db, existingLead);
       }
       return Response.json({ ok: true, duplicate: true });
@@ -172,7 +175,11 @@ export async function POST(request: Request) {
         .where(eq(leads.idempotencyKey, idempotencyKey))
         .limit(1);
 
-      if (existingLead && existingLead.notificationStatus !== "sent") {
+      if (
+        existingLead &&
+        (existingLead.notificationStatus === "failed" ||
+          existingLead.notificationStatus === "not_configured")
+      ) {
         await notifyAndTrackLead(db, existingLead);
       }
       return Response.json({ ok: true, duplicate: true });
