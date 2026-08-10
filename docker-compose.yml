@@ -7,9 +7,11 @@ services:
       WEB3FORMS_ACCESS_KEY: ${WEB3FORMS_ACCESS_KEY:?WEB3FORMS_ACCESS_KEY is required}
       DATABASE_PATH: /app/data/leads.sqlite
       DATABASE_MIGRATIONS_PATH: /app/drizzle
-      PUBLIC_BASE_URL: https://${DOMAIN:?DOMAIN is required}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?PUBLIC_BASE_URL is required}
       HOST: 0.0.0.0
       PORT: 3000
+    ports:
+      - "${BIND_ADDRESS:-0.0.0.0}:${APP_PORT:-3210}:3000"
     volumes:
       - lead_data:/app/data
     networks:
@@ -17,12 +19,14 @@ services:
 
   caddy:
     image: caddy:2.10-alpine
+    profiles:
+      - https
     restart: unless-stopped
     depends_on:
       app:
         condition: service_healthy
     environment:
-      DOMAIN: ${DOMAIN:?DOMAIN is required}
+      DOMAIN: ${DOMAIN:-}
     ports:
       - "80:80"
       - "443:443"
