@@ -52,13 +52,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .registration-grid {
   display: grid;
-  grid-template-columns: minmax(0, 0.82fr) minmax(560px, 1.18fr);
-  gap: 86px;
+  grid-template-columns: minmax(380px, 0.9fr) minmax(560px, 1.1fr);
+  gap: 64px;
   align-items: center;
 }
 
 .registration-copy {
-  max-width: 500px;
+  width: 100%;
+  max-width: 470px;
 }
 
 .eyebrow {
@@ -72,39 +73,94 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .registration-copy h1 {
   margin: 0;
   font-family: "STSong", "Songti SC", "SimSun", serif;
-  font-size: clamp(48px, 4.8vw, 68px);
+  font-size: clamp(42px, 4vw, 58px);
   font-weight: 500;
   line-height: 1.12;
   letter-spacing: -0.045em;
 }
 
 .registration-lead {
-  margin: 32px 0 0;
+  margin: 24px 0 0;
   color: rgba(255, 255, 255, 0.56);
   font-size: 16px;
   line-height: 1.95;
 }
 
-.detail-list {
-  margin: 46px 0 0;
+.contact-card {
+  position: relative;
+  margin-top: 32px;
+  padding: 22px;
+  border: 1px solid rgba(234, 180, 91, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(8px);
 }
 
-.detail-list div {
-  display: grid;
-  grid-template-columns: 90px 1fr;
+.contact-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px auto -1px -1px;
+  width: 4px;
+  border-radius: 10px 0 0 10px;
+  background: var(--amber);
+}
+
+.contact-card__topline {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 18px;
-  padding: 19px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 0 4px 18px;
 }
 
-.detail-list dt {
-  color: rgba(255, 255, 255, 0.42);
+.contact-card__topline > div {
+  display: grid;
+  gap: 5px;
+}
+
+.contact-card__label {
+  color: rgba(255, 255, 255, 0.48);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+}
+
+.contact-card__topline strong {
+  font-family: "STSong", "Songti SC", "SimSun", serif;
+  font-size: 21px;
+  font-weight: 600;
+}
+
+.contact-phone {
+  padding-bottom: 2px;
+  border-bottom: 1px solid rgba(234, 180, 91, 0.55);
+  color: var(--amber);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.025em;
+}
+
+.contact-qr-wrap {
+  overflow: hidden;
+  width: 100%;
+  max-width: 330px;
+  margin-inline: auto;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.contact-qr {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.contact-tip {
+  margin: 14px 0 0;
+  color: rgba(255, 255, 255, 0.68);
+  text-align: center;
   font-size: 13px;
-}
-
-.detail-list dd {
-  margin: 0;
-  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .lead-form {
@@ -372,7 +428,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   }
 
   .registration-copy h1 {
-    font-size: clamp(40px, 12vw, 52px);
+    font-size: clamp(38px, 11vw, 50px);
     line-height: 1.14;
   }
 
@@ -381,13 +437,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
     font-size: 15px;
   }
 
-  .detail-list {
-    margin-top: 30px;
+  .contact-card {
+    margin-top: 28px;
+    padding: 16px;
   }
 
-  .detail-list div {
-    grid-template-columns: 76px 1fr;
-    padding: 15px 0;
+  .contact-card__topline {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 15px;
   }
 
   .lead-form {

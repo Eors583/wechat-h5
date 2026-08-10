@@ -67,8 +67,11 @@ test("server-renders the campaign landing page", async () => {
   const html = await response.text();
   assert.match(html, /<html lang="zh-CN">/i);
   assert.match(html, /人才战略罗盘/);
-  assert.match(html, /预约席位/);
+  assert.match(html, /报名咨询/);
   assert.match(html, /填写联系信息/);
+  assert.match(html, /蓝血研究吴老师/);
+  assert.match(html, /15260211397/);
+  assert.match(html, /contact-wu-wechat\.png/);
   assert.match(html, /隐私说明/);
   assert.doesNotMatch(html, /预算范围|方便沟通时间/);
   assert.match(html, new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/og\\.png`));

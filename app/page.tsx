@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { LeadForm } from "./components/LeadForm";
 import { siteConfig } from "../site.config";
 
@@ -13,16 +14,36 @@ export default function Home() {
       <section className="registration-section" id="register">
         <div className="page-shell registration-grid">
           <div className="registration-copy">
-            <p className="eyebrow">预约席位</p>
-            <h1>先留下联系方式，<br />课程顾问将与你确认详情。</h1>
-            <p className="registration-lead">
-              提交后，我们会在一个工作日内与你联系。你可以先了解课程安排，再决定是否参加。
-            </p>
-            <dl className="detail-list">
-              <div><dt>课程时间</dt><dd>{siteConfig.course.date}</dd></div>
-              <div><dt>上课地点</dt><dd>{siteConfig.course.location}</dd></div>
-              <div><dt>课程形式</dt><dd>{siteConfig.course.format}</dd></div>
-            </dl>
+            <div className="contact-heading">
+              <p className="eyebrow">报名咨询</p>
+              <h1>有课程问题，<br />直接联系吴老师。</h1>
+              <p className="registration-lead">
+                课程安排、报名流程和上课地点，都可以通过电话或微信咨询。
+              </p>
+            </div>
+
+            <div className="contact-card">
+              <div className="contact-card__topline">
+                <div>
+                  <span className="contact-card__label">课程顾问</span>
+                  <strong>蓝血研究吴老师</strong>
+                </div>
+                <a className="contact-phone" href="tel:15260211397" aria-label="拨打吴老师电话 15260211397">
+                  15260211397
+                </a>
+              </div>
+
+              <div className="contact-qr-wrap">
+                <Image
+                  className="contact-qr"
+                  src="/contact-wu-wechat.png"
+                  alt="蓝血研究吴老师的微信二维码"
+                  width="982"
+                  height="1382"
+                />
+              </div>
+              <p className="contact-tip">微信扫码添加好友，咨询课程与报名</p>
+            </div>
           </div>
 
           <LeadForm
