@@ -1,5 +1,3 @@
-import { env } from "cloudflare:workers";
-
 export type LeadNotificationInput = {
   id: string;
   name: string;
@@ -16,12 +14,10 @@ export type LeadNotificationInput = {
   createdAt: string;
 };
 
-export type LeadNotificationResult =
-  | { status: "sent"; providerId: string }
-  | { status: "not_configured" | "failed"; error: string };
-
-type EmailBindings = {
-  WEB3FORMS_ACCESS_KEY?: string;
+export type LeadNotificationRequest = {
+  endpoint: "https://api.web3forms.com/submit";
+  accessKey: string;
+  fields: ReturnType<typeof buildLeadNotification>;
 };
 
 function display(value: string) {
@@ -93,43 +89,18 @@ export function buildLeadNotification(input: LeadNotificationInput) {
   };
 }
 
-export async function sendLeadNotification(input: LeadNotificationInput): Promise<LeadNotificationResult> {
-  const bindings = env as unknown as EmailBindings;
-  const localBindings = typeof process === "undefined" ? {} : process.env;
-  const accessKey = (
-    bindings.WEB3FORMS_ACCESS_KEY || localBindings.WEB3FORMS_ACCESS_KEY
-  )?.trim();
+export function getLeadNotificationRequest(
+  input: LeadNotificationInput,
+): LeadNotificationRequest | null {
+  const accessKey = process.env.WEB3FORMS_ACCESS_KEY?.trim();
 
   if (!accessKey) {
-    return { status: "not_configured", error: "web3forms_access_key_missing" };
+    return null;
   }
 
-  const payload = { access_key: accessKey, ...buildLeadNotification(input) };
-
-  try {
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      return { status: "failed", error: `web3forms_http_${response.status}` };
-    }
-
-    const result = (await response.json()) as { success?: unknown };
-    if (result.success !== true) {
-      return { status: "failed", error: "web3forms_rejected" };
-    }
-
-    return {
-      status: "sent",
-      providerId: "",
-    };
-  } catch {
-    return { status: "failed", error: "web3forms_request_failed" };
-  }
+  return {
+    endpoint: "https://api.web3forms.com/submit",
+    accessKey,
+    fields: buildLeadNotification(input),
+  };
 }

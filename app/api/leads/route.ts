@@ -3,7 +3,7 @@ import { getDb } from "../../../db";
 import { leads } from "../../../db/schema";
 import { siteConfig } from "../../../site.config";
 import {
-  sendLeadNotification,
+  getLeadNotificationRequest,
   type LeadNotificationInput,
 } from "../../lib/lead-notification";
 
@@ -36,8 +36,31 @@ function jsonError(error: string, status: number) {
   return Response.json({ error }, { status });
 }
 
+function getAllowedOrigin(request: Request) {
+  const configuredOrigin = process.env.PUBLIC_BASE_URL?.trim();
+  if (configuredOrigin) return new URL(configuredOrigin).origin;
+
+  const forwardedHost = request.headers.get("X-Forwarded-Host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("Host");
+  const forwardedProtocol = request.headers
+    .get("X-Forwarded-Proto")
+    ?.split(",")[0]
+    ?.trim();
+
+  if (host) {
+    return `${forwardedProtocol || new URL(request.url).protocol.replace(":", "")}://${host}`;
+  }
+
+  return new URL(request.url).origin;
+}
+
 async function fingerprintRequest(request: Request) {
-  const ip = request.headers.get("CF-Connecting-IP") ?? "unknown";
+  const forwardedFor = request.headers.get("X-Forwarded-For")?.split(",")[0]?.trim();
+  const ip =
+    request.headers.get("CF-Connecting-IP") ??
+    forwardedFor ??
+    request.headers.get("X-Real-IP") ??
+    "unknown";
   const userAgent = request.headers.get("User-Agent") ?? "unknown";
   const day = new Date().toISOString().slice(0, 10);
   const bytes = new TextEncoder().encode(`${day}:${ip}:${userAgent}`);
@@ -45,24 +68,13 @@ async function fingerprintRequest(request: Request) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-async function notifyAndTrackLead(db: ReturnType<typeof getDb>, lead: LeadNotificationInput) {
-  const result = await sendLeadNotification(lead);
-
-  try {
-    await db
-      .update(leads)
-      .set({
-        notificationStatus: result.status,
-        notificationProviderId: result.status === "sent" ? result.providerId : "",
-        notificationError: result.status === "sent" ? "" : result.error,
-        notificationSentAt: result.status === "sent" ? new Date().toISOString() : "",
-      })
-      .where(eq(leads.id, lead.id));
-  } catch {
-    console.error(`Unable to persist notification status for lead ${lead.id}`);
-  }
-
-  return result;
+function successResponse(lead: LeadNotificationInput & { idempotencyKey?: string }, duplicate = false) {
+  return {
+    ok: true,
+    duplicate,
+    leadId: lead.id,
+    notification: getLeadNotificationRequest(lead),
+  };
 }
 
 export async function POST(request: Request) {
@@ -70,7 +82,7 @@ export async function POST(request: Request) {
   if (contentLength > 16_000) return jsonError("提交内容过大", 413);
 
   const origin = request.headers.get("Origin");
-  if (origin && origin !== new URL(request.url).origin) {
+  if (origin && new URL(origin).origin !== getAllowedOrigin(request)) {
     return jsonError("不允许从其他网站提交", 403);
   }
 
@@ -118,13 +130,11 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (existingLead) {
-      if (
-        existingLead.notificationStatus === "failed" ||
-        existingLead.notificationStatus === "not_configured"
-      ) {
-        await notifyAndTrackLead(db, existingLead);
-      }
-      return Response.json({ ok: true, duplicate: true });
+      return Response.json(
+        existingLead.notificationStatus === "sent"
+          ? { ok: true, duplicate: true, leadId: existingLead.id, notification: null }
+          : successResponse(existingLead, true),
+      );
     }
 
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
@@ -160,12 +170,8 @@ export async function POST(request: Request) {
     };
 
     await db.insert(leads).values(lead);
-    const notification = await notifyAndTrackLead(db, lead);
 
-    return Response.json(
-      { ok: true, notificationSent: notification.status === "sent" },
-      { status: 201 },
-    );
+    return Response.json(successResponse(lead), { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message.includes("idempotency") || message.includes("UNIQUE constraint failed")) {
@@ -175,14 +181,14 @@ export async function POST(request: Request) {
         .where(eq(leads.idempotencyKey, idempotencyKey))
         .limit(1);
 
-      if (
-        existingLead &&
-        (existingLead.notificationStatus === "failed" ||
-          existingLead.notificationStatus === "not_configured")
-      ) {
-        await notifyAndTrackLead(db, existingLead);
+      if (existingLead) {
+        return Response.json(
+          existingLead.notificationStatus === "sent"
+            ? { ok: true, duplicate: true, leadId: existingLead.id, notification: null }
+            : successResponse(existingLead, true),
+        );
       }
-      return Response.json({ ok: true, duplicate: true });
+      return jsonError("系统暂时无法读取已保存的预约，请稍后再试", 503);
     }
     return jsonError("系统暂时无法保存预约，请稍后再试", 503);
   }

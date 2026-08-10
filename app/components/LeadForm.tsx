@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 
 type LeadFormProps = {
   campaignCode: string;
@@ -8,6 +8,18 @@ type LeadFormProps = {
 };
 
 type SubmitState = "idle" | "submitting" | "success" | "error";
+
+type NotificationRequest = {
+  endpoint: string;
+  accessKey: string;
+  fields: Record<string, string>;
+};
+
+type LeadResponse = {
+  error?: string;
+  leadId?: string;
+  notification?: NotificationRequest | null;
+};
 
 function getAttribution() {
   const params = new URLSearchParams(window.location.search);
@@ -24,6 +36,7 @@ function getAttribution() {
 export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const idempotencyKeyRef = useRef<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,21 +63,71 @@ export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
     };
 
     try {
+      idempotencyKeyRef.current ??= crypto.randomUUID();
+      const idempotencyKey = idempotencyKeyRef.current;
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": crypto.randomUUID(),
+          "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify(payload),
       });
 
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as LeadResponse;
       if (!response.ok) {
         throw new Error(result.error || "提交失败，请稍后再试");
       }
 
+      if (result.notification) {
+        let deliveryStatus: "sent" | "failed" = "failed";
+        let deliveryError = "client_delivery_failed";
+
+        try {
+          const notificationResponse = await fetch(result.notification.endpoint, {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              access_key: result.notification.accessKey,
+              ...result.notification.fields,
+            }),
+          });
+          const notificationResult = (await notificationResponse.json()) as { success?: unknown };
+          if (!notificationResponse.ok || notificationResult.success !== true) {
+            deliveryError = `web3forms_http_${notificationResponse.status}`;
+            throw new Error(deliveryError);
+          }
+          deliveryStatus = "sent";
+          deliveryError = "";
+        } catch {
+          deliveryStatus = "failed";
+        } finally {
+          if (result.leadId) {
+            await fetch("/api/leads/notification", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Idempotency-Key": idempotencyKey,
+              },
+              body: JSON.stringify({
+                leadId: result.leadId,
+                status: deliveryStatus,
+                error: deliveryError,
+              }),
+            }).catch(() => undefined);
+          }
+        }
+
+        if (deliveryStatus !== "sent") {
+          throw new Error("报名信息已保存，但通知邮件暂时未送达，请再次点击提交重试");
+        }
+      }
+
       form.reset();
+      idempotencyKeyRef.current = null;
       setSubmitState("success");
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "提交失败，请稍后再试");

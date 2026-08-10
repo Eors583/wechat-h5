@@ -1,0 +1,43 @@
+services:
+  app:
+    build:
+      context: .
+    restart: unless-stopped
+    environment:
+      WEB3FORMS_ACCESS_KEY: ${WEB3FORMS_ACCESS_KEY:?WEB3FORMS_ACCESS_KEY is required}
+      DATABASE_PATH: /app/data/leads.sqlite
+      DATABASE_MIGRATIONS_PATH: /app/drizzle
+      PUBLIC_BASE_URL: https://${DOMAIN:?DOMAIN is required}
+      HOST: 0.0.0.0
+      PORT: 3000
+    volumes:
+      - lead_data:/app/data
+    networks:
+      - web
+
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN is required}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - web
+
+networks:
+  web:
+
+volumes:
+  lead_data:
+  caddy_data:
+  caddy_config:
