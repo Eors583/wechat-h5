@@ -6,8 +6,9 @@ import { siteConfig } from "../site.config";
 export async function generateMetadata(): Promise<Metadata> {
   const incomingHeaders = await headers();
   const host = incomingHeaders.get("host") ?? "localhost:3000";
+  const configuredBaseUrl = process.env.PUBLIC_BASE_URL?.trim();
   const protocol = incomingHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  const origin = `${protocol}://${host}`;
+  const origin = configuredBaseUrl ? new URL(configuredBaseUrl).origin : `${protocol}://${host}`;
 
   return {
     title: siteConfig.seo.title,

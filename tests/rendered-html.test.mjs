@@ -71,6 +71,7 @@ test("server-renders the campaign landing page", async () => {
   assert.match(html, /填写联系信息/);
   assert.match(html, /隐私说明/);
   assert.doesNotMatch(html, /预算范围|方便沟通时间/);
+  assert.match(html, new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/og\\.png`));
   assert.doesNotMatch(html, /两天沉浸式工作坊|课程导师|适合谁来/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
