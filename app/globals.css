@@ -162,29 +162,27 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .contact-card__body {
   display: grid;
-  grid-template-columns: 210px 1fr;
+  grid-template-columns: 240px 1fr;
   gap: 22px;
   align-items: center;
   padding-top: 20px;
 }
 
 .contact-qr-wrap {
-  position: relative;
   overflow: hidden;
-  width: 210px;
-  aspect-ratio: 1;
-  border: 9px solid #fff;
+  width: 240px;
+  border: 6px solid #fff;
   border-radius: 10px;
   background: #fff;
   box-shadow: 0 12px 32px rgba(1, 18, 17, 0.22);
+  -webkit-touch-callout: default;
+  user-select: auto;
 }
 
 .contact-qr {
-  position: absolute;
-  top: -50%;
-  left: -19%;
-  width: 133%;
-  max-width: none;
+  display: block;
+  width: 100%;
+  max-width: 100%;
   height: auto;
 }
 
@@ -498,12 +496,12 @@ button, a { -webkit-tap-highlight-color: transparent; }
   }
 
   .contact-card__body {
-    grid-template-columns: 190px 1fr;
+    grid-template-columns: 210px 1fr;
     gap: 18px;
   }
 
   .contact-qr-wrap {
-    width: 190px;
+    width: 210px;
   }
 }
 
@@ -565,13 +563,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
   }
 
   .contact-card__body {
-    grid-template-columns: minmax(112px, 0.78fr) minmax(0, 1fr);
-    gap: 14px;
+    grid-template-columns: 1fr;
+    gap: 18px;
     align-items: stretch;
   }
 
   .contact-qr-wrap {
-    width: 100%;
+    width: min(260px, 100%);
+    margin-inline: auto;
   }
 
   .contact-actions {

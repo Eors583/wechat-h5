@@ -35,22 +35,28 @@ export default function Home() {
               </div>
 
               <div className="contact-card__body">
-                <div className="contact-qr-wrap">
+                <a
+                  className="contact-qr-wrap"
+                  href="/contact-wu-wechat.png"
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="查看吴老师完整微信二维码图片"
+                >
                   <Image
                     className="contact-qr"
                     src="/contact-wu-wechat.png"
-                    alt="蓝血研究吴老师的微信二维码"
+                    alt="蓝血研究吴老师的完整微信二维码图片"
                     width="982"
                     height="1382"
                     priority
                   />
-                </div>
+                </a>
 
                 <div className="contact-actions">
                   <div>
                     <span className="contact-actions__label">微信咨询</span>
-                    <strong>扫码添加好友</strong>
-                    <p>添加时请备注“课程咨询”</p>
+                    <strong>长按识别或扫码添加</strong>
+                    <p>点击可查看原图，添加时请备注“课程咨询”</p>
                   </div>
                   <a className="contact-phone" href="tel:15260211397" aria-label="拨打吴老师电话 15260211397">
                     <span>电话咨询</span>
