@@ -72,6 +72,7 @@ test("server-renders the campaign landing page", async () => {
   assert.match(html, /蓝血研究吴老师/);
   assert.match(html, /15260211397/);
   assert.match(html, /contact-wu-wechat\.png/);
+  assert.doesNotMatch(html, /先了解清楚|再决定是否参加|2 天线下工作坊|小班研讨/);
   assert.match(html, /隐私说明/);
   assert.doesNotMatch(html, /预算范围|方便沟通时间/);
   assert.match(html, new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/og\\.png`));

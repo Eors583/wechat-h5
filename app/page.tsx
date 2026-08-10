@@ -19,15 +19,9 @@ export default function Home() {
                 <p className="eyebrow">线下公开课 · 报名咨询</p>
                 <span className="availability"><i /> 报名开放中</span>
               </div>
-              <h1>先了解清楚，<br />再决定是否参加。</h1>
               <p className="registration-lead">
                 课程安排、报名流程和上课地点，都可以直接咨询吴老师；也可以填写右侧信息，由我们主动联系你。
               </p>
-              <ul className="course-chips" aria-label="课程特点">
-                <li>2 天线下工作坊</li>
-                <li>上海</li>
-                <li>小班研讨</li>
-              </ul>
             </div>
 
             <div className="contact-card">
