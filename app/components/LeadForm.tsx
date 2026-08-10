@@ -148,8 +148,11 @@ export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
   return (
     <form className="lead-form" onSubmit={handleSubmit} noValidate>
       <div className="form-heading">
-        <p className="form-kicker">免费预约</p>
-        <h3>填写联系信息</h3>
+        <div className="form-heading__copy">
+          <p className="form-kicker">免费咨询 · 无需付费</p>
+          <h3>留下信息，顾问联系你</h3>
+          <p>填写大约需要 30 秒，课程顾问将在一个工作日内与你沟通。</p>
+        </div>
         <span><b>*</b> 为必填项</span>
       </div>
 
@@ -183,10 +186,10 @@ export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
       </label>
 
       <button className="submit-button" type="submit" disabled={submitState === "submitting"}>
-        {submitState === "submitting" ? "正在提交…" : "提交预约"}
+        {submitState === "submitting" ? "正在提交…" : "提交咨询"}
       </button>
 
-      <p className="form-assurance">不会自动付费，也不会向无关第三方出售你的信息。</p>
+      <p className="form-assurance"><span aria-hidden="true">✓</span> 不会自动付费，也不会向无关第三方出售你的信息</p>
       <p className="form-error" role="alert" aria-live="assertive">{submitState === "error" ? errorMessage : ""}</p>
     </form>
   );

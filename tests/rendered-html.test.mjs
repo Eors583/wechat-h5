@@ -68,7 +68,7 @@ test("server-renders the campaign landing page", async () => {
   assert.match(html, /<html lang="zh-CN">/i);
   assert.match(html, /人才战略罗盘/);
   assert.match(html, /报名咨询/);
-  assert.match(html, /填写联系信息/);
+  assert.match(html, /留下信息，顾问联系你/);
   assert.match(html, /蓝血研究吴老师/);
   assert.match(html, /15260211397/);
   assert.match(html, /contact-wu-wechat\.png/);
