@@ -54,8 +54,6 @@ export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
       phone: data.get("phone"),
       company: data.get("company"),
       jobTitle: data.get("jobTitle"),
-      budgetRange: data.get("budgetRange"),
-      contactTime: data.get("contactTime"),
       consent: data.get("consent") === "on",
       consentVersion,
       website: data.get("website"),
@@ -171,24 +169,6 @@ export function LeadForm({ campaignCode, consentVersion }: LeadFormProps) {
         <label>
           <span>职位</span>
           <input name="jobTitle" type="text" autoComplete="organization-title" maxLength={50} placeholder="例如：HRD / 部门负责人" />
-        </label>
-        <label>
-          <span>预算范围</span>
-          <select name="budgetRange" defaultValue="">
-            <option value="">暂不确定</option>
-            <option value="5000元以内">5,000 元以内</option>
-            <option value="5000-10000元">5,000—10,000 元</option>
-            <option value="10000元以上">10,000 元以上</option>
-          </select>
-        </label>
-        <label>
-          <span>方便沟通时间</span>
-          <select name="contactTime" defaultValue="工作日下午">
-            <option value="工作日上午">工作日上午</option>
-            <option value="工作日下午">工作日下午</option>
-            <option value="工作日晚间">工作日晚间</option>
-            <option value="周末">周末</option>
-          </select>
         </label>
       </div>
 

@@ -32,7 +32,7 @@ npm run db:generate
 
 ## 邮件通知
 
-每次预约成功保存到数据库后，后端会通过 Web3Forms 把姓名、手机号、公司、职位、预算、方便联系时间和来源信息发送到与表单 Access Key 绑定的 `379381070@qq.com`。数据库中的 `notification_status`、`notification_provider_id`、`notification_error` 和 `notification_sent_at` 字段用于记录投递结果。
+每次预约成功保存到数据库后，页面会通过 Web3Forms 把姓名、手机号、公司、职位和来源信息发送到与表单 Access Key 绑定的 `379381070@qq.com`。数据库中的 `notification_status`、`notification_provider_id`、`notification_error` 和 `notification_sent_at` 字段用于记录投递结果。
 
 本地开发时，复制 `.env.example` 为 `.env.local`，再填写 Web3Forms 的表单 Access Key。服务器部署时，把 `deploy.env.example` 复制为 `.env`，填写域名和 Access Key：
 
