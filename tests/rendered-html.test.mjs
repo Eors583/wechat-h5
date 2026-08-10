@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import { createServer } from "node:net";
 import test, { after, before } from "node:test";
 
@@ -78,6 +79,14 @@ test("server-renders the campaign landing page", async () => {
   assert.match(html, new RegExp(`${origin.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/og\\.png`));
   assert.doesNotMatch(html, /两天沉浸式工作坊|课程导师|适合谁来/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
+});
+
+test("uses an HTTP-compatible idempotency key fallback", async () => {
+  const source = await readFile(new URL("../app/components/LeadForm.tsx", import.meta.url), "utf8");
+  assert.match(source, /typeof cryptoApi\?\.randomUUID === "function"/);
+  assert.match(source, /cryptoApi\.getRandomValues\(bytes\)/);
+  assert.match(source, /createIdempotencyKey\(\)/);
+  assert.doesNotMatch(source, /\?\?= crypto\.randomUUID\(\)/);
 });
 
 test("server-renders the privacy page", async () => {
